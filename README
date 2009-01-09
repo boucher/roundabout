@@ -1,0 +1,71 @@
+roundabout
+
+copyright 2008 Ross Boucher
+Released under the terms of the MIT license.
+
+roundabout is a JavaScript HTTP routing framework. 
+
+It works by taking a list of configurations, and using those configurations
+to determine the path of each incoming http request.
+
+A configuration, called a "road" in roundabout terminology, consists of a path,
+and at least one function that corresponds to an HTTP verb. It can optionally
+contain a function definition for each HTTP verb, as well as a filter function
+which will be executed against each request.
+
+Example road:
+
+{
+    path: "/hello",
+    
+    GET: function(context)
+    {
+        context.body = "HELLO WORLD!";
+    },
+    
+    POST: function(context)
+    {
+        context.redirect = "/";
+    }
+    
+    filter: function(request)
+    {
+        return request.user_agent.match(\firefox\g);
+    }
+}
+
+You could implement only GET, or implement all the verbs; supported verbs are:
+
+GET, POST, PUT, DELETE
+
+filter takes a Jack request object, and should return true if the request 
+should be processed, or false if it should not. filter will only be called
+if the path matches.
+
+The first road that has a matching path, verb, and filter that returns yes
+(or has no filter at all) will process the request.
+
+Paths can also be more complex than simple string by using wildcards:
+
+path: "/*/hello" matches "/foo/hello", "/bar/hello" but not "/hello" or "/foo/bar"
+
+Wildcards can be accessed on the context using the wildcards property.
+
+{
+    path: "/ * /hello",
+    
+    GET: function(context)
+    {
+        context.body = context.wildcards[0];
+    }
+}
+
+In this example, going to /foo/hello would print "foo" to the screen.
+
+Another option that can be used with paths is named wildcards:
+
+path: /{name}/friends
+
+This will match "/james/friends", "/bob/friends", etc. and the result
+is available in context.wildcards["name"]
+
